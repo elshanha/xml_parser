@@ -3,12 +3,11 @@ import pandas as pd
 import csv
 from openpyxl import Workbook
 
-
+# Function to parse a xml file which structured in sample.xml
 def xml_to_csv(xml_file, csv_path):
     
     tree = ET.parse(xml_file)
     root = tree.getroot()
-
 
     for item in root.iter('measInfo'):
 
@@ -55,7 +54,7 @@ def xml_to_csv(xml_file, csv_path):
                 print(f"Error: {e}")
                 continue
 
-
+# Function to give better look to header row
 def format_string(s):
     formatted = ''.join(' ' + char if char.isupper() and index > 0 and s[index - 1].islower() else char
                         for index, char in enumerate(s))
@@ -102,5 +101,6 @@ def main(xml_file, csv_file, excel_file):
     # csv_to_excel(csv_file, excel_file)
     pd_csv_to_excel(csv_file, excel_file)
 
+# Add file names (actual xml file that must be converted, others can be anything with only proper extensions)
 if __name__ == "__main__":
     main('sample_data.xml', 'data.csv', 'Newdata.xlsx')
