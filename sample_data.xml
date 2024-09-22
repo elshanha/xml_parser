@@ -1,5 +1,10 @@
 <measCollecFile xmlns="value" xmlns:xsi="value" xsi:schemaLocation="value">
+    <fileHeader dnPrefix="value" vendorName="value" fileFormatVersion="value">
+        <fileSender localDn="value" elementType="value"/>
+        <measCollec beginTime="value"/>
+    </fileHeader>
     <measData>
+        <managedElement localDn="" userLabel="value"/>
         <measInfo measInfoId="value">
             <job jobId="value"/>
             <granPeriod duration="value" beginTime="value"/>
@@ -11,4 +16,7 @@
             </measValue>
         </measInfo>
     </measData>
+    <fileFooter>
+        <measCollec endTime="value"/>
+    </fileFooter>
 </measCollecFile>
