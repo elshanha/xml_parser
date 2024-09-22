@@ -3,56 +3,75 @@ import pandas as pd
 import csv
 from openpyxl import Workbook
 
-# Function to parse a xml file which structured in sample.xml
+# Function to parse a xml file which structured in sample_data.xml
 def xml_to_csv(xml_file, csv_path):
     
     tree = ET.parse(xml_file)
     root = tree.getroot()
 
-    for item in root.iter('measInfo'):
+    ns = {'ns': root.tag.split('}')[0].strip('{')}
 
+    headers = None
+
+    for item in root.findall('.//ns:measInfo', namespaces=ns):
         attrib_keys = list(item.attrib.keys())
-        gp_keys = list(item.find('granPeriod').keys())
-        gp_keys_first = gp_keys[0]
-        gp_keys_second = gp_keys[1]
+        gp_keys = list(item.find('ns:granPeriod', namespaces=ns).attrib.keys())
 
-        key_name = attrib_keys[0]
-        job = item.find('job').tag
-        duration = gp_keys_first
-        beginTime = gp_keys_second
-        repPeriod = item.find('repPeriod').tag
-        measTypes = item.find('measTypes').tag
-        measValue = item.find('measValue').tag
-        measResults = item.find('measValue/measResults').tag
-        suspect = item.find('measValue/suspect').tag
-        
+        key_name = attrib_keys[0] if attrib_keys else 'N/A'
+        job = 'jobId'
+        duration = gp_keys[0] if gp_keys else 'N/A'
+        beginTime = gp_keys[1] if len(gp_keys) > 1 else 'N/A'
+        repPeriod = 'repPeriod'
+        measTypes = 'measTypes'
+        measValue = 'measObjLdn'
+        measResults = 'measResults'
+        suspect = 'suspect'
+
         hs = [key_name, job, duration, beginTime, repPeriod, measTypes, measValue, measResults, suspect]
 
         fss = [format_string(s) for s in hs]
 
         headers = fss
 
-    with open(csv_path, 'w', newline='', encoding='utf-8') as csv_file:
-        writer = csv.writer(csv_file)
-        writer.writerow(headers) 
-        
-        for item in root.iter('measInfo'):
-            try:
-                measInfoId = item.get('measInfoId') if item is not None else 'N/A'
-                job = item.find('job').get('jobId') if item.find('job') is not None else 'N/A'
-                duration = item.find('granPeriod').get('duration') if item.find('granPeriod') is not None else 'N/A'
-                beginTime = item.find('granPeriod').get('beginTime') if item.find('granPeriod') is not None else 'N/A'
-                repPeriod = item.find('repPeriod').get('duration') if item.find('repPeriod') is not None else 'N/A'
-                measTypes = item.find('measTypes').text if item.find('measTypes') is not None else 'N/A'
-                measValue = item.find('measValue').get('measObjLdn') if item.find('measValue') is not None else 'N/A'
-                measResults = item.find('measValue/measResults').text if item.find('measValue/measResults') is not None else 'N/A'
-                suspect = item.find('measValue/suspect').text if item.find('measValue/suspect') is not None else 'N/A'
-                
-                writer.writerow([measInfoId, job, duration, beginTime , repPeriod, measTypes, measValue, measResults, suspect])
-                
-            except AttributeError as e:
-                print(f"Error: {e}")
-                continue
+        break
+
+    if headers:
+        with open(csv_path, 'w', newline='', encoding='utf-8') as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerow(headers) 
+            
+            for item in root.findall('.//ns:measInfo', namespaces=ns):
+                try:
+                    measInfoId = item.get('measInfoId', 'N/A')
+
+                    job_elem = item.find('ns:job', namespaces=ns)
+                    job = job_elem.get('jobId', 'N/A') if job_elem is not None else 'N/A'
+
+                    granPeriod = item.find('ns:granPeriod', namespaces=ns)
+                    duration = granPeriod.get('duration', 'N/A') if granPeriod is not None else 'N/A'
+                    beginTime = granPeriod.get('beginTime', 'N/A') if granPeriod is not None else 'N/A'
+
+                    repPeriod_elem = item.find('ns:repPeriod', namespaces=ns)
+                    repPeriod = repPeriod_elem.get('duration', 'N/A') if repPeriod_elem is not None else 'N/A'
+
+                    measTypes_elem = item.find('ns:measTypes', namespaces=ns)
+                    measTypes = measTypes_elem.text if measTypes_elem is not None else 'N/A'
+
+                    measValue_elem = item.find('ns:measValue', namespaces=ns)
+                    measObjLdn = measValue_elem.get('measObjLdn', 'N/A') if measValue_elem is not None else 'N/A'
+                    measResults_elem = measValue_elem.find('ns:measResults', namespaces=ns) if measValue_elem is not None else None
+                    measResults = measResults_elem.text if measResults_elem is not None else 'N/A'
+
+                    suspect_elem = measValue_elem.find('ns:suspect', namespaces=ns) if measValue_elem is not None else None
+                    suspect = suspect_elem.text if suspect_elem is not None else 'N/A'
+
+                    writer.writerow([measInfoId, job, duration, beginTime, repPeriod, measTypes, measObjLdn, measResults, suspect])
+
+                except AttributeError as e:
+                    print(f"Error processing measInfo: {e}")
+                    continue
+    else:
+        print("No valid headers found, skipping CSV writing.")
 
 # Function to give better look to header row
 def format_string(s):
@@ -103,4 +122,4 @@ def main(xml_file, csv_file, excel_file):
 
 # Add file names (actual xml file that must be converted, others can be anything with only proper extensions)
 if __name__ == "__main__":
-    main('sample_data.xml', 'data.csv', 'Newdata.xlsx')
+    main('some_data.xml', 'newvalue.csv', 'Newvalue.xlsx')

@@ -1,4 +1,4 @@
-<measCollecFile>
+<measCollecFile xmlns="value" xmlns:xsi="value" xsi:schemaLocation="value">
     <measData>
         <measInfo measInfoId="value">
             <job jobId="value"/>
@@ -11,5 +11,4 @@
             </measValue>
         </measInfo>
     </measData>
-    <measData/>
 </measCollecFile>
